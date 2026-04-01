@@ -7,7 +7,7 @@ from io import BytesIO
 
 # --- Sayfa Yapılandırması ---
 st.set_page_config(page_title="Hematoloji Analiz", page_icon="🔬")
-st.title("Hematolojik Analiz Arayüzü")
+st.title("🔬 Dijital Hematoloji Analiz Sistemi")
 
 # 1. Model Hazırlığı (Daha önce yaptığımız gibi)
 siniflar = ['Basophil', 'Eosinophil', 'Lymphocyte', 'Monocyte', 'Neutrophil']
