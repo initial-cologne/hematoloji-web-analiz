@@ -8,12 +8,13 @@ from io import BytesIO
 # --- Sayfa Yapılandırması ---
 st.set_page_config(page_title="Hematoloji Analiz", page_icon="🔬")
 st.title("🔬 Dijital Hematoloji Analiz Sistemi")
+st.write("Görüntüyü bilgisayarınızdan yükleyebilir veya bir web URL'si girebilirsiniz.")
 
-# 1. Model Hazırlığı (Daha önce yaptığımız gibi)
+# --- Model Hazırlığı ---
 siniflar = ['Basophil', 'Eosinophil', 'Lymphocyte', 'Monocyte', 'Neutrophil']
 
 
-@st.cache_resource  # Modelin her seferinde yeniden yüklenmesini engeller, hızı artırır
+@st.cache_resource
 def model_yukle():
     m = models.resnet18()
     m.fc = torch.nn.Linear(m.fc.in_features, len(siniflar))
@@ -24,32 +25,32 @@ def model_yukle():
 
 model = model_yukle()
 
-# 2. Görüntü Dönüşümü
 donusum = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-# 3. Giriş Yöntemi Seçimi
+# --- Sekme (Tab) Yapısı ---
 sekme1, sekme2 = st.tabs(["📁 Dosya Yükle", "🌐 URL ile Analiz"])
+goruntu = None
 
 with sekme1:
-    # Dosya yükleme kodları burada olmalı
-    yuklenen_dosya = st.file_uploader(...)
+    yuklenen_dosya = st.file_uploader("Bir hücre fotoğrafı seçin...", type=["jpg", "jpeg", "png"])
+    if yuklenen_dosya:
+        goruntu = Image.open(yuklenen_dosya).convert('RGB')
 
 with sekme2:
-    # URL giriş kodları burada olmalı
-    url_adresi = st.text_input("Görüntü URL'sini buraya yapıştırın:")
+    url_adresi = st.text_input("Görüntü URL'sini buraya yapıştırın (Örn: https://.../resim.jpg):")
     if url_adresi:
         try:
             yanit = requests.get(url_adresi)
             goruntu = Image.open(BytesIO(yanit.content)).convert('RGB')
         except Exception as e:
-            st.error(f"Görüntü indirilemedi. Lütfen URL'yi kontrol edin. Hata: {e}")
+            st.error("Görüntü indirilemedi. Lütfen URL'nin doğrudan bir görsele ait olduğundan emin olun.")
 
-# 4. Analiz ve Tahmin Süreci
-if goruntu:
+# --- Analiz ve Tahmin ---
+if goruntu is not None:
     st.image(goruntu, caption='Analiz Edilen Hücre', use_container_width=True)
 
     with st.spinner('Yapay zeka morfolojiyi inceliyor...'):
@@ -59,7 +60,6 @@ if goruntu:
             olasiliklar = torch.nn.functional.softmax(ciktilar[0], dim=0)
             tahmin_indisi = torch.argmax(olasiliklar).item()
 
-    # Sonuçların Gösterilmesi
     st.success(f"Teşhis: **{siniflar[tahmin_indisi]}**")
-    st.progress(float(olasiliklar[tahmin_indisi]))  # Görsel bir bar ekler
+    st.progress(float(olasiliklar[tahmin_indisi]))
     st.write(f"Güven Skoru: %{olasiliklar[tahmin_indisi] * 100:.2f}")
