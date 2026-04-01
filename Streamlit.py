@@ -33,14 +33,13 @@ donusum = transforms.Compose([
 
 # 3. Giriş Yöntemi Seçimi
 sekme1, sekme2 = st.tabs(["📁 Dosya Yükle", "🌐 URL ile Analiz"])
-goruntu = None
 
 with sekme1:
-    yuklenen_dosya = st.file_uploader("Bir hücre fotoğrafı seçin...", type=["jpg", "jpeg", "png"])
-    if yuklenen_dosya:
-        goruntu = Image.open(yuklenen_dosya).convert('RGB')
+    # Dosya yükleme kodları burada olmalı
+    yuklenen_dosya = st.file_uploader(...)
 
 with sekme2:
+    # URL giriş kodları burada olmalı
     url_adresi = st.text_input("Görüntü URL'sini buraya yapıştırın:")
     if url_adresi:
         try:
